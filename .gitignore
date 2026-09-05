@@ -1,0 +1,21 @@
+## Editors - OS
+.vscode
+.DS_Store
+Thumbs.db
+*.iml
+## builders
+bower_components
+node_modules
+.scannerwork
+
+## Environment params
+.env
+
+## Yii directories
+vendor/*
+www/assets/*
+www/data/*
+www/cache/*
+
+## Force files to keep
+!.gitkeep
