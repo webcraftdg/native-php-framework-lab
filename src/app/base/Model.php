@@ -110,10 +110,29 @@ class Model {
     /**
      * has errors
      *
+     * @param  mixed $attribute
+     *
      * @return bool
      */
-    public function hasErrors() : bool
+    public function hasErrors(mixed $attribute = null) : bool
     {
-        return empty($this->errors) === false;
+        if ($attribute !== null) {
+            $hasError = empty($this->errors[$attribute]) === false;
+        } else {
+            $hasError = empty($this->errors) === false;
+        }
+        return $hasError;
+    }
+
+    /**
+     * get error
+     *
+     * @param  string $attribute
+     *
+     * @return string
+     */
+    public function getError(string $attribute) : string
+    {
+        return ($this->errors[$attribute]) ?? '';
     }
 }

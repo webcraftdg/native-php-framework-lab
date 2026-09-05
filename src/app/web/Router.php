@@ -63,6 +63,9 @@ class Router
         if (!method_exists($controllerInstance, $actionMethod)) {
             throw new HttpException('Action : '.$actionMethod.' not found', 404);
         }
+
+        App::$app->setController($controllerInstance);
+
         $method = new ReflectionMethod(
             $controllerInstance,
             $actionMethod
