@@ -30,7 +30,18 @@ class Html
         $tag .= '>';
         return $tag;
     }
-
+    public static function beginForm(array $options = []):string
+    {
+        $tag = '<form ';
+        $parsedOptions = static::parseTagOptions($options);
+        $tag .= implode(' ', $parsedOptions);
+        $tag .= '>';
+        return $tag;
+    }
+    public static function endform()
+    {
+        return '</form>';
+    }
 
     public static function endTag(string $name)
     {
@@ -54,16 +65,35 @@ class Html
         $input .= '/>';
         return $input;
     }
-    public static function inputModelPdo(PdoModel $pdoModel, string $name, string $attribute, array $options = []) : string
+
+    public static function labelModelPdo(PdoModel $pdoModel, string $attribute, array $options = []) : string
+    {
+        $options['for'] = ($options['for']) ?? static::inputPdoModelId($pdoModel, $attribute);
+        $class = ($options['class']) ?? '';
+        $label = ($options['label']) ?? $attribute;
+        return static::tag('label', $label, $options);
+    }
+
+    public static function inputModelPdo(PdoModel $pdoModel, string $attribute, array $options = []) : string
     {
         $options['name'] = ($options['name']) ?? static::inputPdoModelName($pdoModel, $attribute);
         $options['id'] = ($options['id']) ?? static::inputPdoModelId($pdoModel, $attribute);
         $options['value'] = ($options['value']) ?? $pdoModel->$attribute;
         $class = ($options['class']) ?? '';
-        if($pdoModel->hasErrors() ===true) {
+        $errorTag = null;
+        $optionTagError = ($options['addErrorTag']) ?? null;
+        unset($options['addErrorTag']);
+        if($pdoModel->hasErrors($attribute) ===true) {
             $options['class'] = $class.' error';
+            if ($optionTagError !== null) {
+                if (is_callable($optionTagError) === true) {
+                    $errorTag = call_user_func($optionTagError);
+                } elseif($optionTagError === true) {
+                    $errorTag = Html::tag('span', $pdoModel->getError($attribute), ['class' => 'error-message']);
+                }
+            }
         }
-        return static::input($name, $options);
+        return static::input('input', $options).$errorTag;
     }
     protected static function parseTagOptions(array $options = []) : array
     {

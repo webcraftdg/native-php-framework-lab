@@ -2,6 +2,7 @@
 
 namespace contacts\app\web;
 
+use contacts\App;
 use contacts\exceptions\ViewException;
 use ReflectionClass;
 
@@ -25,10 +26,15 @@ class View
 
 
     public function render(
-        string $filename,
+        string $view,
         array $params = []
     ): string {
         $params['view'] = $this;
+        $controller = App::$app->getController();
+        $filename = $view;
+        if ($controller instanceof Controller) {
+            $filename = $controller->viewPath.$controller->id.'/'.$filename.'.php';
+        }
         //Génération de la vue
         return $this->renderPhpFile(
             $filename,

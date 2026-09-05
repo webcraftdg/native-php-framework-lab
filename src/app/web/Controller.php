@@ -22,8 +22,7 @@ class Controller
 
         public function render(string $view, array $params = []) : string
         {
-            $filename = $this->viewPath.$this->id.'/'.$view.'.php';
-            $content =  $this->view->render($filename, $params);
+            $content =  $this->view->render($view, $params);
                 // 2. Génération du layout
             return $this->view->renderPhpFile(
                 $this->layoutPath . '/main.php',

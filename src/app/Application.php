@@ -5,6 +5,7 @@ namespace contacts\app;
 use contacts\App;
 use contacts\app\db\Connection;
 use contacts\app\web\AssetManager;
+use contacts\app\web\Controller;
 use contacts\app\web\Request;
 use contacts\app\web\Response;
 use contacts\app\web\Router;
@@ -18,6 +19,7 @@ final class Application
     private Router $router;
     private UrlManager $urlManager;
     private AssetManager $assetManager;
+    private Controller $controller;
     public $controllerNamespace = 'contacts\\webapp\\controllers';
     public $language = 'fr';
     public $timezone = 'Europe/Paris';
@@ -64,6 +66,45 @@ final class Application
         $this->router = new Router($this->request, $this->controllerNamespace);
     }
 
+    public function setController(Controller $controller)
+    {
+        $this->controller = $controller;
+    }
+    
+    public function getController() : ?Controller
+    {
+        return ($this->controller) ?? null;
+    }
+    public function getRequest() : Request
+    {
+        return $this->request;
+    }
+
+    public function getDbConnection():Connection
+    {
+        return $this->dbConnection;
+    }
+    
+    public function getUrlManager() : UrlManager
+    {
+        return $this->urlManager;
+    }
+
+     public function getAssetManager() : AssetManager
+    {
+        return $this->assetManager;
+    }
+
+    public function handleRequest(): Response | null
+    {
+
+        $response = $this->router->dispatch();
+        if (is_string($response) === true) {
+            $response = new Response($response);
+        }
+        return $response;
+    }
+
     protected function setParam(string $name, mixed $config)
     {
         if (property_exists($this, $name) === true) {
@@ -102,35 +143,5 @@ final class Application
             $config['prefix'] ?? '',
             $config['rules'] ?? []
         );
-    }
-
-    public function getRequest() : Request
-    {
-        return $this->request;
-    }
-
-    public function getDbConnection():Connection
-    {
-        return $this->dbConnection;
-    }
-    
-    public function getUrlManager() : UrlManager
-    {
-        return $this->urlManager;
-    }
-
-     public function getAssetManager() : AssetManager
-    {
-        return $this->assetManager;
-    }
-
-    public function handleRequest(): Response | null
-    {
-
-        $response = $this->router->dispatch();
-        if (is_string($response) === true) {
-            $response = new Response($response);
-        }
-        return $response;
     }
 }

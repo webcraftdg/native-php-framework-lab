@@ -1,9 +1,9 @@
 {
   "manifest": {
-    "js": "js/manifest.js"
+    "js": "js/manifest.3e15a44b.js"
   },
   "main": {
-    "js": "js/main.js",
-    "css": "css/main.css"
+    "css": "css/main.96860076.css",
+    "js": "js/main.96860076.js"
   }
 }
