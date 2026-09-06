@@ -42,7 +42,8 @@ class Connection
     public function executeQuery(Query $query)
     {
         $stmt = $this->prepare($query->getSql());
-        return $stmt->execute($query->getParams());
+        $params = ($query->getParams()) ?? [];
+        return $stmt->execute($params);
     }
 
 

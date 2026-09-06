@@ -27,61 +27,68 @@ class PdoModel extends Model
         return static::getDbconnection()->getPrimaryKeys(static::getTableName());
     }
 
+    public static function find() : PdoModelQuery
+    {
+        return static::internalFind();
+    }
 
+    /**
+     * find one
+     *
+     * @param  mixed       $condition
+     *
+     * @return static|null
+     */
     public static function findOne(mixed $condition) : ?static
     {
         $cleanConditions = $condition;
-        $result = null;
         $primaryKey = static::getPrimaryKey();
         if (is_array($condition) === false && count($primaryKey) === 1) {
             $cleanConditions = [$primaryKey[0] => $condition];
         }
-        $records = static::findRawAll($cleanConditions);
-        if (count($records) === 1) {
-            $modelPdo = new static();
-            $modelPdo->isNewRecord = false;
-            $modelPdo->setAttributes($records[0]);
-            $result = $modelPdo;
-        }
-        return $result;
+        $query = static::findRaw($cleanConditions);
+        return $query->pdoModelOne();
     }
 
+    /**
+     * find all
+     *
+     * @param  array $condition
+     * @param  array $params
+     *
+     * @return array
+     */
     public static function findAll($condition = [], $params = []) : array
     {
-        $records = static::findRawAll($condition, $params);
-        return array_map(function (array $record) {
-            $model = new static();
-
-            $model->isNewRecord = false;
-            $model->setAttributes($record);
-
-            return $model;
-        }, $records);
+        $query = static::findRaw($condition, $params);
+        return $query->all($params);
     }
 
-    public static function findRawAll(mixed $condition, $params = []) : array
+    /**
+     * internal find
+     *
+     * @return PdoModelQuery
+     */
+    protected static function internalFind() : PdoModelQuery
     {
-
-        $connection = App::$app->getDbConnection();
-        $table = static::getTableName();
-        $baseQuery = static::prepareQuery(
-            tableName:$table,
+        return static::prepareQuery(
+            className: get_called_class(),
             verb:'SELECT'
         );
-        $baseQuery->where($condition);
-        $sql = $baseQuery->buildSql()->getSql();
-        $sqlParams = $baseQuery->getParams();
-        $params = $params + $sqlParams;
-        $pdo = $connection->prepare($sql);
-        $pdo->execute($params);
-
-        return $pdo->fetchAll();
     }
 
-    public static function prepareQuery(string $tableName, string $verb = 'SELECT', $attributes = ['*'], $joins = []) : Query
+    protected static function findRaw(mixed $condition, $params = []) : PdoModelQuery
     {
-        return new Query(
-            table:$tableName,
+
+        $baseQuery = static::internalFind();
+        $baseQuery->where($condition);
+        return $baseQuery;
+    }
+
+    public static function prepareQuery(string $className, string $verb = 'SELECT', $attributes = ['*'], $joins = []) : PdoModelQuery
+    {
+        return new PdoModelQuery(
+            className:$className,
             verb:$verb,
             attributes:$attributes,
             joins:$joins

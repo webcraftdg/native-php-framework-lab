@@ -3,6 +3,7 @@
 namespace contacts\webapp\controllers;
 
 use contacts\App;
+use contacts\app\db\QueryProvider;
 use contacts\app\web\Controller;
 use contacts\db\models\Contact;
 use Exception;
@@ -15,10 +16,15 @@ class DefaultController extends Controller
     {
         try {
             $contacts = Contact::findAll();
+            $query = Contact::find()->orderBy(['lastname' => 'ASC', 'firstname' => 'DESC']);
+            $provider = new QueryProvider(
+                query:$query
+            );
+
             return $this->render(
                 'default',
                 [
-                    'contacts' => $contacts
+                    'provider' => $provider
             ]);
         } catch(Exception $e) {
             throw $e;
