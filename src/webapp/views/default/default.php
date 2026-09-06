@@ -2,11 +2,12 @@
 /**
  * @var $test
  * @var array $contacts
+ * @var contacts\app\db\QueryProvider $provider
  */
 use contacts\app\web\Html;
 use contacts\db\models\Contact;
 use contacts\app\web\Url;
-
+use contacts\app\db\QueryProvider;
 ?>
 <main role="main" id="main">
     <div class="flex header">
@@ -26,6 +27,31 @@ use contacts\app\web\Url;
         </div>
     </div>
     <div class="w-full">
+        <div>
+             <table class="border-collapse border border-gray-400 w-full">
+                <thead>
+                    <tr>
+                    <th class="border border-gray-300">nombre de page</th>
+                    <th class="border border-gray-300">numéro de page</th>
+                    <th class="border border-gray-300">nombre de lignes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                    <?php
+                        echo Html::tag('td', $provider->getPageNumber(), ['class' => 'border border-gray-300']);
+                        echo Html::tag('td', $provider->getPage(), ['class' => 'border border-gray-300']);
+                        echo Html::tag('td', $provider->getTotalCount(), ['class' => 'border border-gray-300']);
+                    ?>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+
+
+    </div>
+    <div class="w-full">
           <table class="border-collapse border border-gray-400 w-full">
                 <thead>
                     <tr>
@@ -39,7 +65,7 @@ use contacts\app\web\Url;
         <?php
     
         /** @var Contact $contact */
-        foreach ($contacts as $contact):
+        foreach ($provider->getModels() as $contact):
         ?>
                     <tr>
                     <td class="border border-gray-300"><?php echo ucfirst($contact->lastname).' '.ucfirst($contact->firstname); ?></td>
