@@ -12,13 +12,15 @@ class DefaultController extends Controller
 {
 
 
-    public function defaultAction() : mixed
+    public function defaultAction(int $page = 1) : mixed
     {
         try {
             $contacts = Contact::findAll();
             $query = Contact::find()->orderBy(['lastname' => 'ASC', 'firstname' => 'DESC']);
             $provider = new QueryProvider(
-                query:$query
+                query:$query,
+                pageSize:10,
+                page:$page
             );
 
             return $this->render(

@@ -63,12 +63,10 @@ class PdoModelQuery extends Query
      *
      * @return PdoModel|null
      */
-    public function pdoModelOne(array $params = []) : ?PdoModel
+    public function one(array $params = []) : ?PdoModel
     {
         $modelPdo = null;
-        $sql = $this->buildSql()->getSql();
-        $pdo = $this->preparePdo($sql, $params);
-        $record =  $pdo->fetch();
+        $record =  parent::one($params);
          if ($record !== false) {
             $modelPdo = new $this->className();
             $modelPdo->isNewRecord = false;

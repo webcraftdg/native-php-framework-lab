@@ -224,9 +224,9 @@ class Query
      *
      * @param  array $params
      *
-     * @return array
+     * @return mixed
      */
-    public function one(array $params = []) : array
+    public function one(array $params = []) : mixed
     {
         $sql = $this->buildSql()->getSql();
         $pdo = $this->preparePdo($sql, $params);

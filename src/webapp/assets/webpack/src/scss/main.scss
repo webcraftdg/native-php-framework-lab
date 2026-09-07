@@ -94,6 +94,9 @@
         border: 2px solid green;
     }
 }
+.btn:disabled {
+    opacity: 0.5;
+}
 
 .form {
     width: 100%;
