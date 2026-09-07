@@ -1,18 +1,20 @@
 {
-    "name": "webcraftdg/contacts",
+    "name": "webcraftdg/native-php-framework-lab",
     "description": "Natif projet for learning",
     "type": "library",
     "keywords": [
         "php",
         "mysql",
         "mariadb",
-        "natif"
+        "natif",
+        "expérimentation",
+        "laboratoire"
     ],
     "license": "MIT",
-    "homepage": "https://github.com/webcraftdg/contacts",
+    "homepage": "https://github.com/webcraftdg/native-php-framework-lab",
     "support": {
-        "issues": "https://github.com/webcraftdg/contacts/issues",
-        "source": "https://github.com/webcraftdg/dcontacts"
+        "issues": "https://github.com/webcraftdg/native-php-framework-lab/issues",
+        "source": "https://github.com/webcraftdg/native-php-framework-lab"
     },
     "authors": [
         {
