@@ -47,7 +47,7 @@ class PdoModel extends Model
             $cleanConditions = [$primaryKey[0] => $condition];
         }
         $query = static::findRaw($cleanConditions);
-        return $query->pdoModelOne();
+        return $query->one();
     }
 
     /**

@@ -95,12 +95,13 @@ class Html
         }
         return static::input('input', $options).$errorTag;
     }
+    
     protected static function parseTagOptions(array $options = []) : array
     {
         $cleanOptions = [];
         foreach($options as $key => $value) {
             if (is_bool($value) === true) {
-                $cleanOptions[] = $key.'="'.(($value) ? 'true' : 'false').'"';
+               $cleanOptions[] = static::parseBoolOptions($key, $value);
             } elseif(is_array($value) === true) {
                 $cleanOptions[] = $key.'='.json_encode($value);
             } else {
@@ -108,5 +109,18 @@ class Html
             }
         }
         return $cleanOptions;
+    }
+
+    private static function parseBoolOptions(string $key, mixed $value) : string
+    {
+        $cleanOption = '';
+        if ($key !== 'disabled') {
+            $cleanOption = $key.'="'.(($value) ? 'true' : 'false').'"';
+        } else {
+            if ($value === true) {
+                $cleanOption = $key;
+            }
+        }
+        return $cleanOption;
     }
 }

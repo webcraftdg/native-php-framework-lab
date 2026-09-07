@@ -80,12 +80,21 @@ class UrlManager
                     $finaleUrl = preg_replace_callback(
                         '/<([^:]+):([^>]+)>/',
                         function($match) use ($params){
-                            return ($params[$match[1]]) ?? 'params not found';
+                            return ($params[$match[1]]) ?? null;
                         },
                         $rule['pattern']
                     );
                 } else {
                     $finaleUrl = $rule['pattern'];
+                    $lineParams = null;
+                    if (empty($params) === false) {
+                        foreach($params as $key => $value) {
+                            $lineParams .= $key.'='.$value.'&';
+                        }
+                    }
+                    if ($lineParams !== null) {
+                        $finaleUrl .= '?'.trim($lineParams, '&');
+                    }
                 }
             }
         }
