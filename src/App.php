@@ -1,8 +1,7 @@
 <?php
 
-namespace contacts;
+namespace webcraftdg\framework;
 
-use contacts\app\Application;
 
 class App
 {

@@ -2,10 +2,7 @@
 /**
  * 
  */
-namespace contacts\exceptions;
-
-use Exception;
-
+namespace webcraftdg\framework\exceptions;
 final class ValidationException extends BaseException
 {
 

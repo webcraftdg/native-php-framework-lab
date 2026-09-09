@@ -2,7 +2,7 @@
 /**
  * 
  */
-namespace contacts\exceptions;
+namespace webcraftdg\framework\exceptions;
 
 use Exception;
 
