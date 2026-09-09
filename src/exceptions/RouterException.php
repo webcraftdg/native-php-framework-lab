@@ -2,11 +2,7 @@
 /**
  * 
  */
-
-namespace contacts\exceptions;
-
-use Exception;
-
+namespace webcraftdg\framework\exceptions;
 final class RouterException extends BaseException
 {
 

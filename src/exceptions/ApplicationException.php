@@ -3,8 +3,7 @@
  * 
  */
 namespace webcraftdg\framework\exceptions;
-
-final class QueryException extends BaseException
+final class ApplicationException extends BaseException
 {
 
 }
