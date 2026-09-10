@@ -5,12 +5,13 @@ namespace webcraftdg\framework\web;
 use webcraftdg\framework\App;
 use webcraftdg\framework\base\ApplicationContext;
 use webcraftdg\framework\web\View;
-use webcraftdg\framework\exceptions\ViewException;
 
 class AssetBundle
 {
     public string $baseUrl;
+    protected AssetSource $assetSource;
     public string $sourcePath;
+    public string $strategy;
     public string $assetCatalogFilename = 'assets-catalog.json';
     public string $distDirectory = 'dist';
     public array $js = [];
@@ -29,9 +30,21 @@ class AssetBundle
 
     public function init()
     {
-        $this->sourcePath = $this->appContext->getBasePath().DIRECTORY_SEPARATOR.$this->pathRelatif;
+        $this->sourcePath = ($this->sourcePath) ?? $this->appContext->getBasePath().DIRECTORY_SEPARATOR.$this->pathRelatif;
+        $this->assetSource = new AssetSource(
+            path:$this->sourcePath,
+            strategy:($this->strategy) ?? AssetSource::STRATEGY_CATALOG,
+            catalogFile:$this->assetCatalogFilename
+        );
     }
 
+    /**
+     * register view
+     *
+     * @param  \webcraftdg\framework\web\View $view
+     *
+     * @return AssetBundle
+     */
     public static function register(View $view) : AssetBundle
     {
         $assetManager = App::$app->getAssetManager();
@@ -43,44 +56,159 @@ class AssetBundle
 
     public function publish(AssetManager $am, View $view)
     {
+        if ($this->assetSource->strategy === AssetSource::STRATEGY_CATALOG) {
+            $this->publishCatalog($am, $view);
+        } elseif($this->assetSource->strategy === AssetSource::STRATEGY_PATTERN) {
+            $this->publishPattern($am, $view);
+        }
+    }
+
+    /**
+     * publish
+     *
+     * @param  AssetManager                   $am
+     * @param  \webcraftdg\framework\web\View $view
+     *
+     * @return void
+     */
+    protected function publishCatalog(AssetManager $am, View $view)
+    {
         $catalogfile = DIRECTORY_SEPARATOR.trim($this->sourcePath, DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR.$this->assetCatalogFilename;
         if (file_exists($catalogfile) === true) {
             $catalog = json_decode(file_get_contents($catalogfile));
             foreach($catalog as $name => $params) {
                 foreach($params as $type => $path) {
-                    $filePath = $this->sourcePath.DIRECTORY_SEPARATOR.$this->distDirectory.DIRECTORY_SEPARATOR.$path;
-                    if (file_exists($filePath) === true) {
-                        $this->preparePublish($am, $view, $filePath, $name, $type, $path);
+                    $filePath = $this->assetSource->path.DIRECTORY_SEPARATOR.$this->distDirectory.DIRECTORY_SEPARATOR.$path;
+                    $checkName = $this->preparePublish($am, $filePath, $name, $type, $path);
+                    if ($checkName === true) {
+                        $pos = View::POS_HEAD;
+                        $options = [];
+                        if ($type === 'js') {
+                            $options = ($this->jsOptions) ?? [];
+                            $pos = ($options['pos']) ?? $pos;
+                        } else {
+                            $options = ($this->cssOptions) ?? [];
+                            $pos = ($options['pos']) ?? $pos;
+                        }
+                        unset($options['pos']);
+                        $view->registerFile(
+                            type:$type,
+                            filename:$am->baseUrl.'/'.trim($path, '/'),
+                            pos:$pos,
+                            options:$options
+                        );
                     }
                 }
             }
-              
-         
         }
     }
 
-    private function preparePublish(AssetManager $am, View $view,string $filePath, string $name, string $type, string $path) : void
+    /**
+     * publish pattern
+     *
+     * @param  AssetManager                   $am
+     * @param  \webcraftdg\framework\web\View $view
+     *
+     * @return void
+     */
+    protected function publishPattern(AssetManager $am, View $view)
     {
-        $assetPath = $am->assetsPath;
-        if (file_exists($assetPath) === false) {
-            mkdir($assetPath);
+        $this->publishType(
+            am:$am,
+            view:$view,
+            files:$this->js,
+            type:'js',
+            options:$this->jsOptions
+        );
+           $this->publishType(
+            am:$am,
+            view:$view,
+            files:$this->css,
+            type:'css',
+            options:$this->cssOptions
+        );
+    }
+
+    /**
+     * publish type files
+     *
+     * @param  AssetManager                   $am
+     * @param  \webcraftdg\framework\web\View $view
+     * @param  array                          $files
+     * @param  string                         $path
+     * @param  string                         $type
+     * @param  array                          $options
+     *
+     * @return void
+     */
+    protected function publishType(
+        AssetManager $am,
+        View $view,
+        array $files,
+        string $type = 'js',
+        array $options = []
+    )
+    {
+        foreach($files as $filename) {
+            $path = '/'.$type.'/'.trim($filename, '/');
+            $filePath = $this->assetSource->path.DIRECTORY_SEPARATOR.$filename;
+            $checkName = $this->preparePublish($am, $filePath, $filename, $type, $path);
+            if ($checkName === true) {
+                $pos = View::POS_HEAD;
+                $options = ($options) ?? [];
+                $pos = ($options['pos']) ?? $pos;
+                unset($options['pos']);
+                $view->registerFile(
+                    type:$type,
+                    filename:$am->baseUrl.$path,
+                    pos:$pos,
+                    options:$options
+                );
+            }
         }
-        $destPath = $assetPath.DIRECTORY_SEPARATOR.$type;
-        if (file_exists($destPath) === false) {
-            mkdir($destPath);
+    }
+
+    /**
+     * prepare publishing
+     *
+     * @param  AssetManager $am
+     * @param  string       $filePath
+     * @param  string       $name
+     * @param  string       $type
+     * @param  string       $path
+     *
+     * @return bool
+     */
+    private function preparePublish(
+        AssetManager $am,
+        string $filePath,
+        string $name,
+        string $type,
+        string $path) : bool
+    {
+        $checkName = false;
+        if (file_exists($filePath) === true) {
+            $assetPath = $am->assetsPath;
+            if (file_exists($assetPath) === false) {
+                mkdir($assetPath);
+            }
+            $destPath = $assetPath.DIRECTORY_SEPARATOR.$type;
+            if (file_exists($destPath) === false) {
+                mkdir($destPath);
+            }
+            $destFilePath = $assetPath.DIRECTORY_SEPARATOR.$path;
+            $pos = View::POS_HEAD;
+            if ($type === 'js') {
+                $checkName = in_array($name, $this->js);
+                $pos = ($this->jsOptions['pos']) ?? $pos;
+            } else {
+                $checkName = in_array($name, $this->css);
+                $pos = ($this->cssOptions['pos']) ?? $pos;
+            }
+            if ($checkName === true) {
+                $checkName = copy($filePath, $destFilePath);
+            }
         }
-        $destFilePath = $assetPath.DIRECTORY_SEPARATOR.$path;
-        $pos = 'head';
-        if ($type === 'js') {
-            $checkName = in_array($name, $this->js);
-            $pos = ($this->jsOptions['pos']) ?? $pos;
-        } else {
-            $checkName = in_array($name, $this->css);
-            $pos = ($this->cssOptions['pos']) ?? $pos;
-        }
-        if ($checkName === true) {
-            copy($filePath, $destFilePath);
-            $view->registerFile($type, $am->baseUrl.'/'.trim($path, '/'));
-        }
+        return $checkName;
     }
 }
