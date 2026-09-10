@@ -4,7 +4,6 @@ namespace webcraftdg\framework;
 
 use webcraftdg\framework\base\ApplicationContext;
 use webcraftdg\framework\db\Connection;
-use webcraftdg\framework\exceptions\ApplicationException;
 use webcraftdg\framework\web\AssetManager;
 use webcraftdg\framework\web\Controller;
 use webcraftdg\framework\web\Request;
@@ -25,18 +24,13 @@ final class Application extends ApplicationContext
     public $language = 'fr';
     public $timezone = 'Europe/Paris';
     public $name = 'Contacts';
-    public static $availableTypes = [
-       self::APPLICATION_TYPE_WEB, self::APPLICATION_TYPE_CONSOLE
-    ];
 
-    public function __construct(protected string $type, array $config = [])
+    public function __construct(string $type, array $config = [])
     {
-        if (in_array($type, static::$availableTypes) === false) {
-            throw new ApplicationException('Type : '.$this->type.' not accepted', 400);
-        }
+        parent::__construct(type:$type);
+        App::$app = $this;
         $this->init($config);
         $this->setPhpParam();
-        App::$app = $this;
     }
 
     public function run() : void
@@ -151,7 +145,10 @@ final class Application extends ApplicationContext
 
     protected function initAssetManager($config = [])
     {
-        $this->assetManager = new AssetManager($config);
+        $this->assetManager = new AssetManager(
+            applicationContext: App::$app,
+            config:$config
+        );
     }
 
     protected function initUrlManager($config = [])
