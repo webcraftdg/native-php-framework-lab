@@ -82,14 +82,8 @@ class AssetBundle
                     $checkName = $this->preparePublish($am, $filePath, $name, $type, $path);
                     if ($checkName === true) {
                         $pos = View::POS_HEAD;
-                        $options = [];
-                        if ($type === 'js') {
-                            $options = ($this->jsOptions) ?? [];
-                            $pos = ($options['pos']) ?? $pos;
-                        } else {
-                            $options = ($this->cssOptions) ?? [];
-                            $pos = ($options['pos']) ?? $pos;
-                        }
+                        $options = $this->getAssetTypeOptions($type);
+                        $pos = ($options['pos']) ?? $pos;
                         unset($options['pos']);
                         $view->registerFile(
                             type:$type,
@@ -104,6 +98,22 @@ class AssetBundle
     }
 
     /**
+     * get asset options
+     *
+     * @param  string $type
+     *
+     * @return array
+     */
+    private function getAssetTypeOptions(string $type) : array
+    {
+        if ($type === 'js') {
+            $options = ($this->jsOptions) ?? [];
+        } else {
+            $options = ($this->cssOptions) ?? [];
+        }
+        return $options;
+    }
+    /**
      * publish pattern
      *
      * @param  AssetManager                   $am
@@ -116,54 +126,52 @@ class AssetBundle
         $this->publishType(
             am:$am,
             view:$view,
-            files:$this->js,
+            assetFiles:$this->js,
             type:'js',
             options:$this->jsOptions
         );
            $this->publishType(
             am:$am,
             view:$view,
-            files:$this->css,
+            assetFiles:$this->css,
             type:'css',
             options:$this->cssOptions
         );
     }
 
-    /**
-     * publish type files
-     *
-     * @param  AssetManager                   $am
-     * @param  \webcraftdg\framework\web\View $view
-     * @param  array                          $files
-     * @param  string                         $path
-     * @param  string                         $type
-     * @param  array                          $options
-     *
-     * @return void
-     */
-    protected function publishType(
+
+      protected function publishType(
         AssetManager $am,
         View $view,
-        array $files,
+        array $assetFiles,
         string $type = 'js',
         array $options = []
     )
     {
-        foreach($files as $filename) {
-            $path = '/'.$type.'/'.trim($filename, '/');
-            $filePath = $this->assetSource->path.DIRECTORY_SEPARATOR.$filename;
-            $checkName = $this->preparePublish($am, $filePath, $filename, $type, $path);
-            if ($checkName === true) {
-                $pos = View::POS_HEAD;
-                $options = ($options) ?? [];
-                $pos = ($options['pos']) ?? $pos;
-                unset($options['pos']);
-                $view->registerFile(
-                    type:$type,
-                    filename:$am->baseUrl.$path,
-                    pos:$pos,
-                    options:$options
-                );
+        if (file_exists($this->assetSource->path) === true) {
+            $pathFiles = scandir($this->assetSource->path);
+            foreach($assetFiles as $assetFile) {
+                $name = pathinfo($assetFile, PATHINFO_FILENAME);
+                $pattern = '/^'.$name.'((-)*(\w)*)/';
+                foreach($pathFiles as $pathFile) {
+                    if (preg_match($pattern, $pathFile, $mathes) === 1) {
+                        $path = '/'.$type.'/'.trim($pathFile, '/');
+                        $filePath = $this->assetSource->path.DIRECTORY_SEPARATOR.$pathFile;
+                        $checkName = $this->preparePublish($am, $filePath, $assetFile, $type, $path);
+                        if ($checkName === true) {
+                            $pos = View::POS_HEAD;
+                            $options = ($options) ?? [];
+                            $pos = ($options['pos']) ?? $pos;
+                            unset($options['pos']);
+                            $view->registerFile(
+                                type:$type,
+                                filename:$am->baseUrl.$path,
+                                pos:$pos,
+                                options:$options
+                            );
+                        }
+                    }
+                }
             }
         }
     }
