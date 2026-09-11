@@ -2,17 +2,21 @@
 
 namespace webcraftdg\framework\web;
 
+use webcraftdg\framework\base\ApplicationContext;
+
 class AssetManager
 {
     public string $baseUrl;
-    public string $assetsPatch;
-    public function __construct($config = [])
+    public string $assetsPath;
+    public string $assetsDirectoryName = 'assets';
+    public function __construct(
+        protected ApplicationContext $applicationContext,
+        $config = []
+    )
     {
-        $this->baseUrl = ($this->baseUrl) ?? '/assets';
-        $this->assetsPatch = ($this->assetsPatch) ?? dirname(__DIR__, 3).'/www/assets/';
+        $this->baseUrl = ($this->baseUrl) ?? '/'.$this->assetsDirectoryName;
+        $this->assetsPath = $this->applicationContext->getBaseWebPath().DIRECTORY_SEPARATOR.$this->assetsDirectoryName;
         $this->baseUrl = ($config['baseUrl']) ?? $this->baseUrl;
-        $this->assetsPatch = ($config['assetsPatch']) ?? $this->assetsPatch;
+        $this->assetsPath = ($config['assetsPatch']) ?? $this->assetsPath;
     }
-
-
 }
